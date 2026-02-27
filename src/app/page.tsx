@@ -16,23 +16,24 @@ export default function Home() {
   return (
     <div className="flex h-screen w-full">
       <ChatSidebar />
-      <div className="flex flex-col mt-60 mx-auto w-full">
-        <div className="flex flex-col items-center gap-2 md:ml-40">
-          <div className="flex flex-col items-center gap-4 justify-center">
-            <div className="">
-              <Image
-                src="/Loomora_full_removebg.png"
-                alt="Loomora-logo"
-                width={400}
-                height={200}
-                className=""
-              />
-            </div>
-          </div>
+
+      <div className="flex flex-col flex-1 relative">
+
+        {/* Logo Center */}
+        <div className="flex flex-col items-center justify-center flex-1">
+          <Image
+            src="/Loomora_full_removebg.png"
+            alt="Loomora-logo"
+            width={400}
+            height={200}
+          />
         </div>
-        <div className="fixed w-full md:w-[calc(100%-288px)] bottom-5  flex px-4 justify-center items-center">
-          <ChatInterface onSubmit={handleSubmit} isLoading={isLoading} />
+
+        {/* Chat Input */}
+        <div className="fixed bottom-5 z-10 md:left-7 md:mr-10 lg:mr-0 lg:left-0 w-full px-4 flex justify-center">
+            <ChatInterface onSubmit={handleSubmit} isLoading={isLoading} />
         </div>
+
       </div>
     </div>
   );

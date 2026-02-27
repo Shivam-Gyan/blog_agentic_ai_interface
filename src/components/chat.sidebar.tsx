@@ -17,7 +17,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 
 function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: ShortSidebarStyleProps) {
     return (
-        <div className="flex gap-4 pt-4 items-center">
+        <div className=" flex gap-4 pt-4 items-center">
 
             {/* Animated Logo Container */}
             <div
@@ -141,7 +141,7 @@ export default function ChatSidebar() {
 
     return (
         <>
-            <div className="md:hidden fixed w-72">
+            <div className="md:hidden z-30 fixed w-72">
                 <Sheet>
                     <SheetTrigger asChild>
                         <div className="flex gap-2 pt-4">
