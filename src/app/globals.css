@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -120,7 +121,52 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
+
+* {
+  font-family: 'Sora', sans-serif;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tabSlide {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tab-content {
+  animation: tabSlide 0.25s ease both;
+}
+
+/* * {
+  outline: 1px solid red !important;
+}
+
+* { outline: 1px solid red !important; }
+* * { outline: 1px solid orange !important; }
+* * * { outline: 1px solid yellow !important; }
+* * * * { outline: 1px solid green !important; }
+* * * * * { outline: 1px solid blue !important; }
+* * * * * * { outline: 1px solid indigo !important; }
+* * * * * * * { outline: 1px solid violet !important; } */
