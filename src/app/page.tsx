@@ -94,14 +94,12 @@
 //     </div>
 //   );
 // }
-
-
 'use client'
 
 import ChatInterface from "@/components/chat.interface";
 import ChatSidebar from "@/components/chat.sidebar";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -126,10 +124,15 @@ export default function Home() {
 
   const handleSubmit = async ({ input, activeTool }: handleSubmitParameter) => {
 
-    setMessages(prev => [...prev, { role: "user", content: input }])
     setIsLoading(true)
 
-    const response = await fetch('http://127.0.0.1:8000/generate', {
+    // add user message
+    setMessages(prev => [...prev, { role: "user", content: input }])
+
+    // add empty assistant message (for streaming)
+    setMessages(prev => [...prev, { role: "assistant", content: "" }])
+
+    const response = await fetch("http://127.0.0.1:8000/generate", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -141,11 +144,69 @@ export default function Home() {
       })
     })
 
-    const data = await response.json()
+    if (!response.body) {
+      console.error("No response body")
+      setIsLoading(false)
+      return
+    }
 
-    setMessages(prev => [...prev, { role: "assistant", content: data.response }])
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+
+    let assistantText = ""
+    let buffer = ""
+    setIsLoading(false)
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      buffer += decoder.decode(value, { stream: true })
+
+      const lines = buffer.split("\n")
+      // keep the last (possibly incomplete) line in the buffer
+      buffer = lines.pop() || ""
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue
+
+        const data = JSON.parse(line.slice(6))
+
+        if (data.type === "token") {
+          assistantText += data.content
+
+          setMessages(prev => {
+            const updated = [...prev]
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: assistantText
+            }
+            return updated
+          })
+        } else if (data.type === "result") {
+          // final result — overwrite with the complete response if provided
+          if (data.content) {
+            assistantText = data.content
+          }
+          setMessages(prev => {
+            const updated = [...prev]
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: assistantText
+            }
+            return updated
+          })
+        }
+      }
+    }
+
     setIsLoading(false)
   }
+
+  useEffect(() => {
+
+    
+  }, [])
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
@@ -153,8 +214,8 @@ export default function Home() {
       {/* Sidebar */}
       <div
         className={`
-        shrink-0 transition-all duration-300 z-20
-        ${sidebarOpen ? "md:w-72" : "w-0"}
+        shrink-0 transition-all duration-300 z-20 
+        ${sidebarOpen ? "md:w-72" : "w-16 h-screen"}
       `}
       >
         <ChatSidebar
@@ -168,7 +229,7 @@ export default function Home() {
       <div className="flex flex-col flex-1 bg-white">
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col">
+        <div className="flex-1 mt-16 md:mt-6 min-h-0 overflow-y-auto px-6 py-6 flex flex-col">
 
           {messages.length === 0 ? (
 
@@ -182,15 +243,11 @@ export default function Home() {
                 className="mb-6 select-none"
               />
 
-              {/* <p className="text-gray-500 text-sm">
-                Start a conversation
-              </p> */}
-
             </div>
 
           ) : (
 
-            <div className="max-w-3xl mx-auto flex flex-col gap-4">
+            <div className="w-full md:w-[80%] lg:w-3xl mx-auto flex flex-col gap-4">
 
               {messages.map((msg, i) => (
 

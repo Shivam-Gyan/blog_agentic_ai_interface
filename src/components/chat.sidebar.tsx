@@ -240,8 +240,8 @@ const user = {
 // ── Collapsed sidebar: sticky narrow icon strip ──────────────────────────────
 function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: ShortSidebarStyleProps) {
     return (
-        <>
-            <div className="sticky top-0 h-screen w-16 overflow-hidden flex flex-col items-center pt-4 gap-4 bg-blue-100/30">
+        <div className="h-full flex flex-col bg-blue-100/30">
+            <div className="sticky top-0 h-auto w-16 overflow-hidden flex flex-col items-center pt-4 gap-4 ">
 
                 {/* Logo icon */}
                 <Image
@@ -261,7 +261,7 @@ function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: Short
                     className="hover:bg-blue-100 hover:rounded-full"
                     title="Open sidebar"
                 >
-                    <PanelLeft className="!w-5 !h-5 text-gray-500" />
+                    <PanelLeft className="size-5 text-gray-500" />
                 </Button>
 
                 {/* New chat */}
@@ -272,7 +272,7 @@ function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: Short
                     className="hover:bg-blue-100 hover:rounded-full"
                     title="New chat"
                 >
-                    <MessageCirclePlus className="!w-5 !h-5 text-gray-500" />
+                    <MessageCirclePlus className="size-5 text-gray-500" />
                 </Button>
 
 
@@ -281,7 +281,7 @@ function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: Short
 
             </div>
 
-            <Button variant={'none'} onClick={()=> setSidebarOpen(!sidebarOpen)} className="bg-none sticky bottom-5 ">
+            <Button variant='non' onClick={()=> setSidebarOpen(!sidebarOpen)} className="bg-none flex-1 flex items-end z-20 ">
                 <Avatar className="w-9  h-9  border-2 border-gray-400">
                     <AvatarImage src={user?.profilePicture} />
                     <AvatarFallback className="text-xl font-medium text-slate-500">
@@ -289,7 +289,7 @@ function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: Short
                     </AvatarFallback>
                 </Avatar>
             </Button>
-        </>
+        </div>
     );
 }
 
