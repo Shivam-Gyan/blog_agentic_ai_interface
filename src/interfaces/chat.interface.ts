@@ -1,3 +1,4 @@
+import { handleSubmitParameter } from "@/app/page";
 
 //  this interface has only (id, title and date) of converstaion of chat to display in sidebar
 export interface ChatSidebarTemplate{
@@ -32,6 +33,6 @@ export interface ShortSidebarStyleProps {
 }
 
 export interface ChatInterfaceProps {
-    onSubmit:(message:string)=>void;
+    onSubmit:({ input, activeTool }: handleSubmitParameter) => void;
     isLoading: boolean;
 }

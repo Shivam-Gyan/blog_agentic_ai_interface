@@ -4,7 +4,7 @@ import { ChatInterfaceProps } from "@/interfaces/chat.interface";
 import useSpeechRecognition from "@/lib/speech.recognition";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
-import { ArrowUp, AudioLines, Plus, Square } from "lucide-react";
+import { ArrowUp, AudioLines, Bot, PenLine, Plus, Sparkles, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "./ui/textarea";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
@@ -32,11 +32,16 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
 
     const [isMcpEnabled, setIsMcpEnabled] = useState(false);
     const [activeTab, setActiveTab] = useState<"tools" | "resources">("tools");
+    const [activeTool, setActiveTool] = useState<'chat' | 'generate' | 'refine' | null>('chat');
 
     const submitMessage = () => {
         if (!input.trim()) return;
-        onSubmit(input);
+        onSubmit({input,activeTool});
         setInput("");
+    };
+
+    const toggleTool = (tool: 'chat' | 'generate' | 'refine') => {
+        setActiveTool((prev) => (prev === tool ? null : tool));
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -181,7 +186,52 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
                                 )}
                             </DropdownMenuContent>
                         </DropdownMenu>
+
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleTool('chat')}
+                            className={cn(
+                                "h-9 w-9 rounded-full ml-3 md:ml-5 border cursor-pointer",
+                                activeTool === 'chat'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'border-gray-400 text-gray-600 hover:border-gray-500'
+                            )}
+                        >
+                            <Bot className="size-5" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleTool('generate')}
+                            className={cn(
+                                "h-9 w-9 rounded-full border cursor-pointer",
+                                activeTool === 'generate'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'border-gray-400 text-gray-600 hover:border-gray-500'
+                            )}
+                        >
+                            <PenLine className="size-4" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleTool('refine')}
+                            className={cn(
+                                "h-9 w-9 rounded-full border cursor-pointer",
+                                activeTool === 'refine'
+                                    ? 'bg-blue-600 text-white border-blue-600'
+                                    : 'border-gray-400 text-gray-600 hover:border-gray-500'
+                            )}
+                        >
+                            <Sparkles className="size-5" />
+                        </Button>
                     </div>
+
+
 
                     {/* Right — speech + submit */}
                     <div className="flex gap-2">
