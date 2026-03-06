@@ -281,7 +281,7 @@ function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: Short
 
             </div>
 
-            <Button variant='non' onClick={()=> setSidebarOpen(!sidebarOpen)} className="bg-none flex-1 flex items-end z-20 ">
+            <Button variant='none' onClick={()=> setSidebarOpen(!sidebarOpen)} className="bg-none flex-1 flex items-end z-20 ">
                 <Avatar className="w-9  h-9  border-2 border-gray-400">
                     <AvatarImage src={user?.profilePicture} />
                     <AvatarFallback className="text-xl font-medium text-slate-500">
