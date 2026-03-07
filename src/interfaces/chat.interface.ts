@@ -1,4 +1,8 @@
-import { handleSubmitParameter } from "@/app/page";
+// Parameter type for message submission — defined here to avoid a circular
+// dependency between the interface layer and the page layer.
+export type handleSubmitParameter = {
+  input: string;
+};
 
 //  this interface has only (id, title and date) of converstaion of chat to display in sidebar
 export interface ChatSidebarTemplate{
@@ -33,6 +37,6 @@ export interface ShortSidebarStyleProps {
 }
 
 export interface ChatInterfaceProps {
-    onSubmit:({ input, activeTool }: handleSubmitParameter) => void;
+    onSubmit:({ input }: handleSubmitParameter) => void;
     isLoading: boolean;
 }

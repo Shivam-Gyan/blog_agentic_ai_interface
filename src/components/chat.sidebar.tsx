@@ -229,6 +229,7 @@ import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "./ui/
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Dispatch, SetStateAction } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useConversationStore } from "@/stores/conversationStore";
 
 
 const user = {
@@ -239,6 +240,7 @@ const user = {
 
 // ── Collapsed sidebar: sticky narrow icon strip ──────────────────────────────
 function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: ShortSidebarStyleProps) {
+    const createConversation = useConversationStore((s) => s.createConversation);
     return (
         <div className="h-full flex flex-col bg-blue-100/30">
             <div className="sticky top-0 h-auto w-16 overflow-hidden flex flex-col items-center pt-4 gap-4 ">
@@ -269,6 +271,7 @@ function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: Short
                     variant="ghost"
                     size="icon"
                     disabled={isChatLoading}
+                    onClick={() => createConversation()}
                     className="hover:bg-blue-100 hover:rounded-full"
                     title="New chat"
                 >
@@ -305,13 +308,20 @@ export default function ChatSidebar({ sidebarOpen, setSidebarOpen }: ChatSidebar
     const pathname = usePathname();
     const isChatLoading = false;
 
-    const chats: ChatSidebarTemplate[] = [
-        { _id: "1", title: "Today's Chat 1", createdAt: new Date().toISOString() },
-        { _id: "2", title: "let understand the problem of agentic AI and how it can be solved", createdAt: new Date().toISOString() },
-        { _id: "3", title: "Today's Chat 3", createdAt: new Date().toISOString() },
-        { _id: "4", title: "Yesterday's Chat", createdAt: subDays(new Date(), 1).toISOString() },
-        { _id: "5", title: "Older Chat", createdAt: subDays(new Date(), 2).toISOString() },
-    ];
+    // const chats: ChatSidebarTemplate[] = [
+    //     { _id: "1", title: "Today's Chat 1", createdAt: new Date().toISOString() },
+    //     { _id: "2", title: "let understand the problem of agentic AI and how it can be solved", createdAt: new Date().toISOString() },
+    //     { _id: "3", title: "Today's Chat 3", createdAt: new Date().toISOString() },
+    //     { _id: "4", title: "Yesterday's Chat", createdAt: subDays(new Date(), 1).toISOString() },
+    //     { _id: "5", title: "Older Chat", createdAt: subDays(new Date(), 2).toISOString() },
+    // ];
+
+    const conversations = useConversationStore((s) => s.conversations);
+    const chats: ChatSidebarTemplate[] = conversations.map((conv) => ({
+        _id: conv.thread_id,
+        title: conv.title,
+        createdAt: conv.createdAt,
+    }));
 
     let todayChats: ChatSidebarTemplate[] = [];
     let yesterdayChats: ChatSidebarTemplate[] = [];

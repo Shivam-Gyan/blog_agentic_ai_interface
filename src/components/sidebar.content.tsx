@@ -1,3 +1,5 @@
+'use client';
+
 import Image from "next/image";
 import { Button } from "./ui/button";
 import { KeyRound, LogOut, MessageCirclePlus, PanelRight } from "lucide-react";
@@ -8,15 +10,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { profile } from "console";
 import Link from "next/link";
+import { useUserStore } from "@/stores/userStore";
+import { useConversationStore } from "@/stores/conversationStore";
 
 
 export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, isChatLoading, todayChats, yesterdayChats, last30DaysChats, olderChats }: SidebarContentProps) {
-    console.log(sidebarOpen);
-    const user = {
-        name: "John Doe",
-        profilePicture: "/avatar.png",
-        email: 'john.doe@example.com'
-    }
+    // console.log(sidebarOpen);
+    // const user = {
+    //     name: "John Doe",
+    //     profilePicture: "/avatar.png",
+    //     email: 'john.doe@example.com'
+    // }
+    const user           = useUserStore((s) => s.user);
+    const logout         = useUserStore((s) => s.logout);
+    const createConversation = useConversationStore((s) => s.createConversation);
     return (
         // <div className="relative px-4 bg-blue-100/30 h-screen w-72">
         <div className=" relative px-4 bg-blue-100/30 h-screen w-72 flex flex-col">
@@ -44,6 +51,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
                 <Button
                     variant='ghost'
                     disabled={isChatLoading}
+                    onClick={() => createConversation()}
                     className="bg-blue-100 h-12 cursor-pointer rounded-full text-slate-700 hover:shadow-md hover:bg-blue-100 w-full">
                     <MessageCirclePlus className="size-5 font-medium mr-2" /> New Chat
                 </Button>
@@ -90,9 +98,9 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
                     <DropdownMenuTrigger asChild className="p-4 py-2">
                         <div className="flex gap-4 items-center cursor-pointer mb-5 hover:bg-blue-100 rounded-md">
                             <Avatar className="w-10 h-10 border-2 border-gray-400">
-                                <AvatarImage src={user?.profilePicture} alt={user?.name} />
+                                <AvatarImage src={user?.avatar ?? "/avatar.png"} alt={user?.name ?? "User"} />
                                 <AvatarFallback className="text-xl font-medium text-slate-500">
-                                    {user?.name.charAt(0).toUpperCase()}
+                                    {user?.name?.charAt(0).toUpperCase() ?? "?"}
                                 </AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col ">
@@ -111,15 +119,15 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
 
                         <div className="flex items-center gap-3 p-3 border-b border-gray-100">
                             <Avatar className="w-10 h-10 border-2 border-gray-400">
-                                <AvatarImage src={user?.profilePicture} />
-                                <AvatarFallback className="text-xl font-medium text-slate-500">
-                                    {user?.name?.charAt(0).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
+                                    <AvatarImage src={user?.avatar ?? "/avatar.png"} />
+                                    <AvatarFallback className="text-xl font-medium text-slate-500">
+                                        {user?.name?.charAt(0).toUpperCase() ?? "?"}
+                                    </AvatarFallback>
+                                </Avatar>
 
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
-                                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                                <p className="text-sm font-medium text-gray-900 truncate">{user?.name ?? "Guest"}</p>
+                                <p className="text-xs text-gray-500 truncate">{user?.email ?? ""}</p>
                             </div>
                         </div>
 
@@ -130,7 +138,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
 
                         <DropdownMenuItem
                             className="flex items-center mt-2 gap-2 p-3 px-4 rounded-md cursor-pointer text-red-600 hover:bg-red-100 focus:bg-red-100"
-                        // onClick={handleLogout}
+                            onClick={logout}
                         >
                             <LogOut className="size-5 text-red-500" />
                             <span className="text-sm">Logout</span>

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Textarea } from "./ui/textarea";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu";
 import { Switch } from "./ui/switch";
+import { useAgentStore } from "@/stores/agentStore";
 
 
 const tools = [
@@ -30,18 +31,16 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
     const [isSpeechActive, setIsSpeechActive] = useState(false);
     const { transcript, isListening, error } = useSpeechRecognition(isSpeechActive);
 
+    
     const [isMcpEnabled, setIsMcpEnabled] = useState(false);
     const [activeTab, setActiveTab] = useState<"tools" | "resources">("tools");
-    const [activeTool, setActiveTool] = useState<'chat' | 'generate' | 'refine' | null>('chat');
-
+    const mode    = useAgentStore((s) => s.mode);
+    const setMode = useAgentStore((s) => s.setMode);
+    
     const submitMessage = () => {
         if (!input.trim()) return;
-        onSubmit({input,activeTool});
+        onSubmit({input});
         setInput("");
-    };
-
-    const toggleTool = (tool: 'chat' | 'generate' | 'refine') => {
-        setActiveTool((prev) => (prev === tool ? null : tool));
     };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -82,7 +81,6 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
                     disabled={isLoading}
                     rows={1}
                 />
-
                 <div className="mt-2 flex items-center justify-between">
                     {/* Left — MCP dropdown */}
                     <div className="flex gap-2">
@@ -191,11 +189,11 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => toggleTool('chat')}
+                            onClick={() => setMode('chat')}
                             className={cn(
-                                "h-9 w-9 rounded-full ml-3 md:ml-5 border cursor-pointer",
-                                activeTool === 'chat'
-                                    ? 'bg-blue-600 text-white border-blue-600'
+                                "h-9 w-9 rounded-full ml-3 md:ml-5 hover:bg-indigo-600 hover:text-white border cursor-pointer",
+                                mode === 'chat'
+                                    ? 'bg-indigo-600 text-white border-indigo-600'
                                     : 'border-gray-400 text-gray-600 hover:border-gray-500'
                             )}
                         >
@@ -205,11 +203,11 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => toggleTool('generate')}
+                            onClick={() => setMode('generate')}
                             className={cn(
-                                "h-9 w-9 rounded-full border cursor-pointer",
-                                activeTool === 'generate'
-                                    ? 'bg-blue-600 text-white border-blue-600'
+                                "h-9 w-9 rounded-full hover:bg-indigo-600 hover:text-white  border cursor-pointer",
+                                mode === 'generate'
+                                    ? 'bg-indigo-600 text-white border-indigo-600'
                                     : 'border-gray-400 text-gray-600 hover:border-gray-500'
                             )}
                         >
@@ -219,11 +217,11 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => toggleTool('refine')}
+                            onClick={() => setMode('refine')}
                             className={cn(
                                 "h-9 w-9 rounded-full border cursor-pointer",
-                                activeTool === 'refine'
-                                    ? 'bg-blue-600 text-white border-blue-600'
+                                mode === 'refine'
+                                    ? 'bg-indigo-600 hover:bg-indigo-600 hover:text-white  text-white border-indigo-600'
                                     : 'border-gray-400 text-gray-600 hover:border-gray-500'
                             )}
                         >
