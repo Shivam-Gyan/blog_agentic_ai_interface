@@ -1,7 +1,7 @@
 export type MessageRole = "user" | "assistant";
 
 export interface Message {
-  id: string;
+  id: string ;
   role: MessageRole;
   content: string;
   timestamp: number;
@@ -12,6 +12,7 @@ export interface Conversation {
   title: string;
   createdAt: string;
   messages: Message[];
+  is_active?: boolean;
 }
 
 export interface ConversationState {

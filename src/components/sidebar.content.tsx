@@ -15,15 +15,12 @@ import { useConversationStore } from "@/stores/conversationStore";
 
 
 export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, isChatLoading, todayChats, yesterdayChats, last30DaysChats, olderChats }: SidebarContentProps) {
-    // console.log(sidebarOpen);
-    // const user = {
-    //     name: "John Doe",
-    //     profilePicture: "/avatar.png",
-    //     email: 'john.doe@example.com'
-    // }
     const user           = useUserStore((s) => s.user);
     const logout         = useUserStore((s) => s.logout);
     const createConversation = useConversationStore((s) => s.createConversation);
+
+
+    
     return (
         // <div className="relative px-4 bg-blue-100/30 h-screen w-72">
         <div className=" relative px-4 bg-blue-100/30 h-screen w-72 flex flex-col">
@@ -51,7 +48,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
                 <Button
                     variant='ghost'
                     disabled={isChatLoading}
-                    onClick={() => createConversation()}
+                    onClick={() => createConversation("new chat")}
                     className="bg-blue-100 h-12 cursor-pointer rounded-full text-slate-700 hover:shadow-md hover:bg-blue-100 w-full">
                     <MessageCirclePlus className="size-5 font-medium mr-2" /> New Chat
                 </Button>
@@ -98,7 +95,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
                     <DropdownMenuTrigger asChild className="p-4 py-2">
                         <div className="flex gap-4 items-center cursor-pointer mb-5 hover:bg-blue-100 rounded-md">
                             <Avatar className="w-10 h-10 border-2 border-gray-400">
-                                <AvatarImage src={user?.avatar ?? "/avatar.png"} alt={user?.name ?? "User"} />
+                                <AvatarImage src={user?.profile_picture ?? "/avatar.png"} alt={user?.name ?? "User"} />
                                 <AvatarFallback className="text-xl font-medium text-slate-500">
                                     {user?.name?.charAt(0).toUpperCase() ?? "?"}
                                 </AvatarFallback>
@@ -119,7 +116,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
 
                         <div className="flex items-center gap-3 p-3 border-b border-gray-100">
                             <Avatar className="w-10 h-10 border-2 border-gray-400">
-                                    <AvatarImage src={user?.avatar ?? "/avatar.png"} />
+                                    <AvatarImage src={user?.profile_picture ?? "/avatar.png"} />
                                     <AvatarFallback className="text-xl font-medium text-slate-500">
                                         {user?.name?.charAt(0).toUpperCase() ?? "?"}
                                     </AvatarFallback>

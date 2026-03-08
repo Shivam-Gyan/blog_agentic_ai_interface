@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useUserStore } from "@/stores/userStore";
 import { useThemeStore } from "@/stores/themeStore";
 import api from "@/services/api";
+import { useConversationStore } from "@/stores/conversationStore";
 
 /**
  * Runs once on application mount to:
@@ -16,6 +17,8 @@ export function useInitializeApp() {
   const setLoading = useUserStore((s) => s.setLoading);
   const logout = useUserStore((s) => s.logout);
   const theme = useThemeStore((s) => s.theme);
+
+  const setConversation = useConversationStore((s) => s.setConversation);
 
   // Sync persisted theme → DOM class on first render
   useEffect(() => {
@@ -34,10 +37,19 @@ export function useInitializeApp() {
 
       setLoading(true);
       try {
-        const { data } = await api.get("/api/user/profile");
-        setUser(data, token);
-      } catch {
+        const { data } = await api.get("/user/detail");
+        console.log("Authenticated user:", data.response);
+        setUser(data.response, token);
+
+        const conversationRes = await api.get("/conversations");
+
+        const conversations = conversationRes?.data?.conversations ?? []
+        console.log("Fetched conversations:", conversationRes);
+        setConversation(conversations);
+        
+      } catch (err) {
         // Token invalid or expired — clear everything
+        console.error("Auth init failed:", err);
         logout();
       } finally {
         setLoading(false);

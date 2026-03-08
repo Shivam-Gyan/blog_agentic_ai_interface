@@ -6,9 +6,10 @@ export type handleSubmitParameter = {
 
 //  this interface has only (id, title and date) of converstaion of chat to display in sidebar
 export interface ChatSidebarTemplate{
-    _id: string;
+    thread_id: string;
     title:string;
     createdAt: string;
+    is_active?: boolean;
 }
 
 

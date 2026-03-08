@@ -318,9 +318,10 @@ export default function ChatSidebar({ sidebarOpen, setSidebarOpen }: ChatSidebar
 
     const conversations = useConversationStore((s) => s.conversations);
     const chats: ChatSidebarTemplate[] = conversations.map((conv) => ({
-        _id: conv.thread_id,
+        thread_id: conv.thread_id,
         title: conv.title,
-        createdAt: conv.createdAt,
+        createdAt: conv.created_at,
+        is_active: conv.is_active,
     }));
 
     let todayChats: ChatSidebarTemplate[] = [];

@@ -22,18 +22,23 @@ export default function Home() {
   const messageEndRef = useRef<HTMLDivElement | null>(null);
 
   const currentThreadId         = useConversationStore((s) => s.currentThreadId);
+  const setCurrentThread         = useConversationStore((s) => s.setCurrentThread);
   const createConversation      = useConversationStore((s) => s.createConversation);
   const addMessage              = useConversationStore((s) => s.addMessage);
   const appendAssistant         = useConversationStore((s) => s.appendAssistantMessage);
   const setLastAssistantContent = useConversationStore((s) => s.setLastAssistantContent);
-  const messages                = useConversationStore((s) =>
-    s.conversations.find((c) => c.thread_id === s.currentThreadId)?.messages ?? EMPTY_MESSAGES
-  );
+  const messages                = useConversationStore((s) => s.messages) || EMPTY_MESSAGES;
   const mode = useAgentStore((s) => s.mode);
-
+  // console.log("page wale section me hu abhi \n", messages)
   // Ensure at least one conversation exists on first load
   useEffect(() => {
-    if (!currentThreadId) createConversation("New Chat");
+    // console.log("Current thread ID on Home mount:", currentThreadId);
+    if (!currentThreadId){
+      const threadId = createConversation("New Chat");
+      // setCurrentThread(threadId);
+      console.log("new chat converstaion hai ", threadId)
+    }
+
   }, [currentThreadId, createConversation]);
 
   // Auto-scroll to latest message
@@ -57,19 +62,26 @@ export default function Home() {
       content: "",
       timestamp: Date.now(),
     };
+    
     addMessage(threadId, userMsg);
     addMessage(threadId, assistantMsg);
 
+    console.log({
+      threadId,
+      userMsg,
+      assistantMsg,
+      mode,
+    })
+
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000"}/generate`,
+        `${process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000"}/generate/${threadId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             user_query: input,
             mode: mode,
-            thread_id: threadId,
           }),
         }
       );
@@ -78,13 +90,15 @@ export default function Home() {
 
       const reader     = res.body.getReader();
       const decoder   = new TextDecoder();
+      console.log(reader,decoder)
       let buffer      = "";
       let renderBuffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
+        console.log("Received chunk:", value);
+        console.log("Decoded chunk:", decoder.decode(value));
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";

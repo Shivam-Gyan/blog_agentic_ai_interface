@@ -2,8 +2,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  avatar?: string;
+  profile_picture?: string;
   createdAt: string;
+  isActive: boolean;
 }
 
 export interface UserState {
