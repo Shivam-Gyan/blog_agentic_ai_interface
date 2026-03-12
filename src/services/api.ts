@@ -16,12 +16,12 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   // Prefer the in-memory Zustand token; fall back to localStorage for cases
   // where the store has not been hydrated yet (e.g. first load).
-  const token =
-    useUserStore.getState().jwtToken ??
-    (typeof window !== "undefined"
-      ? localStorage.getItem("jwt_token")
-      : null);
-
+  const token = localStorage.getItem("jwt_token") || null
+    // useUserStore.getState().jwtToken ??
+    // (typeof window !== "undefined"
+    //   ? 
+    //   : null);
+      console.log(" abhi hum api calling config me hai Attaching token to request:", token);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

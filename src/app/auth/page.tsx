@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Sparkles, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import api from "@/services/api";
+import { useUserStore } from "@/stores/userStore";
+import { useRouter } from "next/navigation";
 
 // ── Google Icon SVG ────────────────────────────────────────────────────────
 function GoogleIcon() {
@@ -88,9 +91,43 @@ function Field({
   );
 }
 
-// ── Main Auth Page ─────────────────────────────────────────────────────────
+
+
+// ── Error list component ──────────────────────────────────────────────────
+function ErrorList({ errors }: { errors: string[] }) {
+  if (errors.length === 0) return null;
+  return (
+    <div className="rounded-xl border border-red-100 bg-red-50 p-3 space-y-1.5">
+      <div className="flex items-center gap-1.5 text-red-500 font-semibold text-xs tracking-wide uppercase">
+        <AlertCircle className="size-3.5 shrink-0" />
+        <span>Please fix the following</span>
+      </div>
+      <ul className="space-y-1">
+        {errors.map((err, i) => (
+          <li key={i} className="flex items-start gap-2 text-xs text-red-600">
+            <span className="mt-0.5 size-1.5 rounded-full bg-red-400 shrink-0" />
+            {err.trim()}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+
 export default function AuthPage() {
   const [tab, setTab] = useState<"signin" | "signup">("signin");
+  const [errors, setErrors] = useState<string[]>([]);
+
+  const  router = useRouter();
+
+  const handleTabChange = (t: "signin" | "signup") => {
+    setTab(t);
+    setErrors([]);
+  };
+
+  const parseErrors = (message: string) =>
+    message.split(",").map((s) => s.trim()).filter(Boolean);
 
   // Sign in state
   const [signInEmail, setSignInEmail] = useState("");
@@ -102,15 +139,86 @@ export default function AuthPage() {
   const [signUpPassword, setSignUpPassword] = useState("");
   const [signUpConfirm, setSignUpConfirm] = useState("");
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const setUser = useUserStore(state => state.setUser);
+  const user = useUserStore(state => state.user);
+
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("submit", { type: "signin", email: signInEmail, password: signInPassword });
+    setErrors([]);
+    try {
+      const response = await api.post("/auth/verify", {
+        email: signInEmail,
+        password: signInPassword,
+      });
+      if (response?.data?.success === false) {
+        setErrors(parseErrors(response.data.message));
+        return;
+      }
+      console.log("Login response:", response);
+      const user_details = {
+        id: response.data.user.sub,
+        email:response.data.user.email,
+        name: response.data.user.name,
+        profile_picture: response.data.user.profile_picture,
+        createdAt: response.data.user.created_at,
+        isActive: response.data.user.is_active,
+      }
+      setUser(user_details, response.data.jwt_token);
+      router.push("/");
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setErrors(msg ? parseErrors(msg) : ["Sign in failed. Please try again."]);
+    }
   };
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("submit", { type: "signup", name: signUpName, email: signUpEmail, password: signUpPassword, confirm: signUpConfirm });
+    setErrors([]);
+
+    if (signUpPassword !== signUpConfirm) {
+      setErrors(["Passwords do not match."]);
+      return;
+    }
+
+    try {
+      const response = await api.post("/auth/register", {
+        name: signUpName,
+        email: signUpEmail,
+        password: signUpPassword,
+        profile_picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(signUpName)}&background=random`,
+      });
+      console.log("Registration response:", response);
+      if (response?.data?.success === false) {
+        setErrors(parseErrors(response.data.message));
+        return;
+      }
+
+      const user_details = {
+        id: response.data.user.sub,
+        email:response.data.user.email,
+        name: response.data.user.name,
+        profile_picture: response.data.user.profile_picture,
+        createdAt: response.data.user.created_at,
+        isActive: response.data.user.is_active,
+      }
+      setUser(user_details, response.data.jwt_token);
+      setErrors([]);
+
+      setTimeout(() => {
+        router.push("/");
+      },300);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setErrors(msg ? parseErrors(msg) : ["Registration failed. Please try again."]);
+    }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token && user) {
+      router.push("/");
+    }
+  }, [router, user]);
 
   const handleGoogle = () => {
     console.log("submit", { type: "google" });
@@ -149,7 +257,7 @@ export default function AuthPage() {
               <button
                 key={t}
                 type="button"
-                onClick={() => setTab(t)}
+                onClick={() => handleTabChange(t)}
                 className={cn(
                   "flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200",
                   tab === t
@@ -194,6 +302,8 @@ export default function AuthPage() {
                 value={signInPassword} onChange={setSignInPassword} required
               />
 
+              <ErrorList errors={errors} />
+
               <div className="flex justify-end">
                 <button type="button" className="text-xs text-blue-500 hover:text-blue-700 font-medium transition-colors">
                   Forgot password?
@@ -209,7 +319,7 @@ export default function AuthPage() {
 
               <p className="text-center text-xs text-slate-400">
                 Don't have an account?{" "}
-                <button type="button" onClick={() => setTab("signup")} className="text-blue-500 hover:text-blue-700 font-semibold transition-colors">
+                <button type="button" onClick={() => handleTabChange("signup")} className="text-blue-500 hover:text-blue-700 font-semibold transition-colors">
                   Sign up
                 </button>
               </p>
@@ -240,6 +350,8 @@ export default function AuthPage() {
                 value={signUpConfirm} onChange={setSignUpConfirm} required
               />
 
+              <ErrorList errors={errors} />
+
               <Button
                 type="submit"
                 className="w-full h-11 mt-2 rounded-xl bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold text-sm shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all hover:-translate-y-0.5"
@@ -249,7 +361,7 @@ export default function AuthPage() {
 
               <p className="text-center text-xs text-slate-400">
                 Already have an account?{" "}
-                <button type="button" onClick={() => setTab("signin")} className="text-blue-500 hover:text-blue-700 font-semibold transition-colors">
+                <button type="button" onClick={() => handleTabChange("signin")} className="text-blue-500 hover:text-blue-700 font-semibold transition-colors">
                   Sign in
                 </button>
               </p>

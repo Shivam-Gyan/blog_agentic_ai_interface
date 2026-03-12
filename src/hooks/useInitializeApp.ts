@@ -18,6 +18,7 @@ export function useInitializeApp() {
   const logout = useUserStore((s) => s.logout);
   const theme = useThemeStore((s) => s.theme);
 
+  const setInitialized = useUserStore((s) => s.setInitialized);
   const setConversation = useConversationStore((s) => s.setConversation);
 
   // Sync persisted theme → DOM class on first render
@@ -33,7 +34,10 @@ export function useInitializeApp() {
           ? localStorage.getItem("jwt_token")
           : null;
 
-      if (!token) return;
+      if (!token) {
+        setInitialized(true);
+        return;
+      }
 
       setLoading(true);
       try {
@@ -53,6 +57,7 @@ export function useInitializeApp() {
         logout();
       } finally {
         setLoading(false);
+        setInitialized(true);
       }
     };
 

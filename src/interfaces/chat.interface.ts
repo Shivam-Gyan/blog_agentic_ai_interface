@@ -1,4 +1,7 @@
 // Parameter type for message submission — defined here to avoid a circular
+
+import { User } from "./user.interface";
+
 // dependency between the interface layer and the page layer.
 export type handleSubmitParameter = {
   input: string;
@@ -35,6 +38,7 @@ export interface ShortSidebarStyleProps {
     setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
     sidebarOpen: boolean;
     isChatLoading: boolean;
+    user: User | null;
 }
 
 export interface ChatInterfaceProps {

@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Message } from "@/interfaces/conversation.interface";
 import api from "@/services/api";
+import { threadId } from "worker_threads";
 
 // Matches the backend GET /conversations response shape exactly
 export interface ConversationSummary {
@@ -16,6 +17,8 @@ interface ConversationStore {
   conversations: ConversationSummary[];
   currentThreadId: string | null;
   messages: Message[];
+  userPrompts: string[];
+  // setPrompts: (prompt: string | "") => void;
   getMessagesByThreadId: (threadId: string) => Promise<Message[]>;
   setConversation: (conversations: ConversationSummary[]) => void;
   createConversation: (title?: string) => string;
@@ -23,13 +26,15 @@ interface ConversationStore {
   addMessage: (threadId: string, message: Message) => void;
   appendAssistantMessage: (threadId: string, chunk: string) => void;
   setLastAssistantContent: (threadId: string, content: string) => void;
-  deleteConversation: (threadId: string) => void;
+  hardDeleteConversation: (threadId: string) => Promise<any>;
+  softDeleteConversation: (threadId: string) => Promise<any>;
 }
 
 export const useConversationStore = create<ConversationStore>((set) => ({
   conversations: [],
   currentThreadId: null,
   messages: [],
+  userPrompts: [],
   
   setConversation: (conversations: ConversationSummary[]) => set({ conversations }),
   
@@ -43,6 +48,7 @@ export const useConversationStore = create<ConversationStore>((set) => ({
       ],
       currentThreadId: thread_id,
       messages: [],
+      userPrompts: [],
     }));
 
 
@@ -51,7 +57,7 @@ export const useConversationStore = create<ConversationStore>((set) => ({
 
   getMessagesByThreadId: async (threadId) => {
     const conversation = await api.get(`/conversations/${threadId}`);
-
+    console.log("Fetched conversation for threadId", threadId, conversation);
     const rawMessages = conversation?.data?.conversation?.messages ?? [];
     // console.log("Fetched conversation for threadId", threadId, conversation);
 
@@ -63,9 +69,13 @@ export const useConversationStore = create<ConversationStore>((set) => ({
       timestamp: new Date(m.timestamp).getTime(),
     }));
 
-    set({ messages });
+    const prompts = conversation?.data?.conversation?.user_prompts ?? [];
+
+    set({ messages, userPrompts: prompts });
     return messages;
   },
+
+  // setPrompts:(prompt:string)=> set((state)=>({userPrompts: prompt.length === 0 ? [] : [...state.userPrompts, prompt]})),
 
 
   setCurrentThread: (threadId) => set({ currentThreadId: threadId }),
@@ -82,6 +92,7 @@ export const useConversationStore = create<ConversationStore>((set) => ({
         };
       }),
       messages: threadId === state.currentThreadId ? [...state.messages, message] : state.messages,
+      userPrompts: threadId === state.currentThreadId &&  message.role === 'user' ? [...state.userPrompts, message.content] : state.userPrompts,
     })),
 
   // Appends a streamed text chunk to the last assistant message in the thread.
@@ -116,7 +127,7 @@ export const useConversationStore = create<ConversationStore>((set) => ({
       };
     }),
 
-  deleteConversation: (threadId) =>
+  softDeleteConversation: async (threadId) =>{
     set((state) => {
       const filtered = state.conversations.filter(
         (c) => c.thread_id !== threadId
@@ -128,5 +139,37 @@ export const useConversationStore = create<ConversationStore>((set) => ({
             ? (filtered[0]?.thread_id ?? null)
             : state.currentThreadId,
       };
-    }),
+    });
+
+    //  set conversation is_active: false in backend
+    // logic here 
+
+    const response = await api.delete(`/conversations/soft-delete/${threadId}`);
+
+    console.log("Soft delete response for threadId", threadId, response);
+
+    return response;
+  },
+
+  hardDeleteConversation: async(threadId) => {
+    set((state) => {
+      const filtered = state.conversations.filter(
+        (c) => c.thread_id !== threadId
+      );
+      return {  
+        conversations: filtered,
+        currentThreadId:
+          state.currentThreadId === threadId
+            ? (filtered[0]?.thread_id ?? null)
+            : state.currentThreadId,
+      };
+    });
+
+    // hard delete from backend
+    const response = await api.delete(`/conversations/hard-delete/${threadId}`);
+    console.log("Hard delete response for threadId", threadId, response);
+
+    return response.data;
+  }
+
 }));

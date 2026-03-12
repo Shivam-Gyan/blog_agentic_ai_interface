@@ -23,7 +23,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
     
     return (
         // <div className="relative px-4 bg-blue-100/30 h-screen w-72">
-        <div className=" relative px-4 bg-blue-100/30 h-screen w-72 flex flex-col">
+        <div className=" relative select-none px-4 bg-blue-100/30 h-screen w-72 flex flex-col">
 
             {/*  logo and side panel toogleing button */}
             {/* <div className="flex justify-between w-64 items-center"> */}
@@ -95,7 +95,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
                     <DropdownMenuTrigger asChild className="p-4 py-2">
                         <div className="flex gap-4 items-center cursor-pointer mb-5 hover:bg-blue-100 rounded-md">
                             <Avatar className="w-10 h-10 border-2 border-gray-400">
-                                <AvatarImage src={user?.profile_picture ?? "/avatar.png"} alt={user?.name ?? "User"} />
+                                <AvatarImage  className="object-cover" src={user?.profile_picture ?? "/avatar.png"} alt={user?.name ?? "User"} />
                                 <AvatarFallback className="text-xl font-medium text-slate-500">
                                     {user?.name?.charAt(0).toUpperCase() ?? "?"}
                                 </AvatarFallback>
@@ -116,7 +116,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
 
                         <div className="flex items-center gap-3 p-3 border-b border-gray-100">
                             <Avatar className="w-10 h-10 border-2 border-gray-400">
-                                    <AvatarImage src={user?.profile_picture ?? "/avatar.png"} />
+                                    <AvatarImage className="object-cover" src={user?.profile_picture ?? "/avatar.png"} />
                                     <AvatarFallback className="text-xl font-medium text-slate-500">
                                         {user?.name?.charAt(0).toUpperCase() ?? "?"}
                                     </AvatarFallback>

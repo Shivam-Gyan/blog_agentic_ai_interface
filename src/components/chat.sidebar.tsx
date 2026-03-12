@@ -224,25 +224,22 @@ import { isToday, isYesterday, isAfter, subDays } from "date-fns";
 import SidebarContent from "./sidebar.content";
 import Image from "next/image";
 import { Button } from "./ui/button";
-import { MessageCirclePlus, PanelLeft, PanelRight } from "lucide-react";
-import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
+import { BookmarkPlus, MessageCirclePlus, MessageCircleQuestionMark, PanelLeft, PanelRight, PanelRightClose } from "lucide-react";
+import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Dispatch, SetStateAction } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useConversationStore } from "@/stores/conversationStore";
+import PromptItem from "./sidebar.user.prompts";
+import { useUserStore } from "@/stores/userStore";
 
-
-const user = {
-    name: "John Doe",
-    profilePicture: "/avatar.png",
-    email: 'john.doe@example.com'
-}
 
 // ── Collapsed sidebar: sticky narrow icon strip ──────────────────────────────
-function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: ShortSidebarStyleProps) {
+function ShortSidebarStyle({ user, setSidebarOpen, sidebarOpen, isChatLoading }: ShortSidebarStyleProps) {
     const createConversation = useConversationStore((s) => s.createConversation);
+    const userPrompts = useConversationStore((s) => s.userPrompts);
     return (
-        <div className="h-full flex flex-col bg-blue-100/30">
+        <div className="h-full select-none flex flex-col bg-blue-100/30">
             <div className="sticky top-0 h-auto w-16 overflow-hidden flex flex-col items-center pt-4 gap-4 ">
 
                 {/* Logo icon */}
@@ -278,15 +275,58 @@ function ShortSidebarStyle({ setSidebarOpen, sidebarOpen, isChatLoading }: Short
                     <MessageCirclePlus className="size-5 text-gray-500" />
                 </Button>
 
-
+                {/* Prompts panel */}
+                <Sheet>
+                    <SheetTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isChatLoading}
+                            className="hover:bg-blue-100 hover:rounded-full"
+                            title="Prompts"
+                        >
+                            <MessageCircleQuestionMark className="size-5 text-gray-500" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent showCloseButton={false} side="right" className="w-96 justify-center flex flex-col gap-0 p-0">
+                        <SheetHeader className="px-5 py-4 ">
+                            <SheetTitle className="text-base font-semibold flex items-center gap-2">
+                                <MessageCircleQuestionMark className="size-6" />
+                                Prompts
+                            </SheetTitle>
+                        </SheetHeader>
+                        <SheetClose asChild>
+                            <Button variant="ghost" className="absolute right-4 top-2 hover:bg-transparent z-10">
+                                <PanelRightClose className="size-6 text-gray-500" />
+                            </Button>
+                        </SheetClose>
+                        <div className="flex-1 overflow-y-auto px-5 py-4">
+                            {/* TODO: replace with real saved prompts list */}
+                            {userPrompts.length > 0 ? (
+                                <div>
+                                    {
+                                        userPrompts.map((prompt, index) => (
+                                            <PromptItem key={index} prompt={prompt} />))
+                                    }
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-16 text-gray-400">
+                                    <MessageCircleQuestionMark className="size-10 stroke-1" />
+                                    <p className="text-sm font-medium">No saved prompts yet</p>
+                                    <p className="text-xs">Start Conversation and save your prompt</p>
+                                </div>
+                            )}
+                        </div>
+                    </SheetContent>
+                </Sheet>
 
 
 
             </div>
 
-            <Button variant='none' onClick={()=> setSidebarOpen(!sidebarOpen)} className="bg-none flex-1 flex items-end z-20 ">
+            <Button variant='none' onClick={() => setSidebarOpen(!sidebarOpen)} className="bg-none flex-1 flex items-end z-20 ">
                 <Avatar className="w-9  h-9  border-2 border-gray-400">
-                    <AvatarImage src={user?.profilePicture} />
+                    <AvatarImage src={user?.profile_picture} className="object-cover " />
                     <AvatarFallback className="text-xl font-medium text-slate-500">
                         {user?.name?.charAt(0).toUpperCase()}
                     </AvatarFallback>
@@ -308,14 +348,6 @@ export default function ChatSidebar({ sidebarOpen, setSidebarOpen }: ChatSidebar
     const pathname = usePathname();
     const isChatLoading = false;
 
-    // const chats: ChatSidebarTemplate[] = [
-    //     { _id: "1", title: "Today's Chat 1", createdAt: new Date().toISOString() },
-    //     { _id: "2", title: "let understand the problem of agentic AI and how it can be solved", createdAt: new Date().toISOString() },
-    //     { _id: "3", title: "Today's Chat 3", createdAt: new Date().toISOString() },
-    //     { _id: "4", title: "Yesterday's Chat", createdAt: subDays(new Date(), 1).toISOString() },
-    //     { _id: "5", title: "Older Chat", createdAt: subDays(new Date(), 2).toISOString() },
-    // ];
-
     const conversations = useConversationStore((s) => s.conversations);
     const chats: ChatSidebarTemplate[] = conversations.map((conv) => ({
         thread_id: conv.thread_id,
@@ -323,6 +355,8 @@ export default function ChatSidebar({ sidebarOpen, setSidebarOpen }: ChatSidebar
         createdAt: conv.created_at,
         is_active: conv.is_active,
     }));
+
+    const user = useUserStore((s) => s.user);
 
     let todayChats: ChatSidebarTemplate[] = [];
     let yesterdayChats: ChatSidebarTemplate[] = [];
@@ -360,7 +394,7 @@ export default function ChatSidebar({ sidebarOpen, setSidebarOpen }: ChatSidebar
                         <div className="sticky border-2 border-gray-300 overflow-hidden m-2 rounded-full pr-3 h-12 pb-5 top-0 flex  items-center pt-4 ">
                             <Image src="/Loomora_icon_removebg.png" alt="Sidebar Logo" width={80} height={80} loading="eager" />
                             <Button variant="ghost" size="icon" className="hover:rounded-full">
-                                <PanelLeft className="!w-6 !h-6 text-gray-500" />
+                                <PanelLeft className="size-5 text-gray-500" />
                             </Button>
                         </div>
                     </SheetTrigger>
@@ -371,7 +405,7 @@ export default function ChatSidebar({ sidebarOpen, setSidebarOpen }: ChatSidebar
                         </SheetTitle>
                         <SheetClose asChild>
                             <Button variant="ghost" className="absolute right-4 top-4 hover:bg-transparent z-10">
-                                <PanelRight className="!w-6 !h-6 text-gray-500" />
+                                <PanelRight className="size-5  text-gray-500" />
                             </Button>
                         </SheetClose>
                         <SidebarContent {...sharedProps} />
@@ -383,7 +417,7 @@ export default function ChatSidebar({ sidebarOpen, setSidebarOpen }: ChatSidebar
             <div className="hidden md:block h-full">
                 {sidebarOpen
                     ? <SidebarContent {...sharedProps} />
-                    : <ShortSidebarStyle setSidebarOpen={setSidebarOpen} sidebarOpen={sidebarOpen} isChatLoading={isChatLoading} />
+                    : <ShortSidebarStyle setSidebarOpen={setSidebarOpen} user={user} sidebarOpen={sidebarOpen} isChatLoading={isChatLoading} />
                 }
             </div>
         </>
