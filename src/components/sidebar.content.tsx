@@ -12,13 +12,19 @@ import { profile } from "console";
 import Link from "next/link";
 import { useUserStore } from "@/stores/userStore";
 import { useConversationStore } from "@/stores/conversationStore";
+import { useRouter } from "next/navigation";
 
 
 export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, isChatLoading, todayChats, yesterdayChats, last30DaysChats, olderChats }: SidebarContentProps) {
     const user           = useUserStore((s) => s.user);
     const logout         = useUserStore((s) => s.logout);
     const createConversation = useConversationStore((s) => s.createConversation);
+    const router = useRouter();
+    const handleNewChatClcik = () => {
+       const thread_id =  createConversation("new chat");
 
+       router.push(`/chat/${thread_id}`);
+    }
 
     
     return (
@@ -48,7 +54,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
                 <Button
                     variant='ghost'
                     disabled={isChatLoading}
-                    onClick={() => createConversation("new chat")}
+                    onClick={() => handleNewChatClcik()}
                     className="bg-blue-100 h-12 cursor-pointer rounded-full text-slate-700 hover:shadow-md hover:bg-blue-100 w-full">
                     <MessageCirclePlus className="size-5 font-medium mr-2" /> New Chat
                 </Button>
@@ -95,7 +101,7 @@ export default function SidebarContent({ pathname, setSidebarOpen, sidebarOpen, 
                     <DropdownMenuTrigger asChild className="p-4 py-2">
                         <div className="flex gap-4 items-center cursor-pointer mb-5 hover:bg-blue-100 rounded-md">
                             <Avatar className="w-10 h-10 border-2 border-gray-400">
-                                <AvatarImage  className="object-cover" src={user?.profile_picture ?? "/avatar.png"} alt={user?.name ?? "User"} />
+                                <AvatarImage  className="object-cover" src={user?.profile_picture ?? "https://imgs.search.brave.com/G_CebIs3Q74U4tIBcXXg8ztYBgNKAYzga6hPP3BoIQ0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tb2Nr/bWluZC1hcGkudWlm/YWNlcy5jby9jb250/ZW50L2h1bWFuLzEx/OS5qcGc"} alt={user?.name ?? "User"} />
                                 <AvatarFallback className="text-xl font-medium text-slate-500">
                                     {user?.name?.charAt(0).toUpperCase() ?? "?"}
                                 </AvatarFallback>

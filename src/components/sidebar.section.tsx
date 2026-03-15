@@ -101,7 +101,7 @@ export default function SidebarSection({ title, chats }: ChatSidebarSectionProps
                                     className="flex text-gray-600 font-Geist w-full px-3 py-2 items-center gap-2  rounded-md cursor-pointer  hover:bg-blue-100 focus:bg-blue-100"
                                     // onClick={logout}
                                 >
-                                    <ArchiveRestore className="size-5 text-gray-500 font-Geist" />
+                                    <ArchiveRestore className="size-4 text-gray-500 font-Geist" />
                                     <span className="text-sm font-Geist">Archieve</span>
                                 </button>
                                 <button
@@ -109,7 +109,7 @@ export default function SidebarSection({ title, chats }: ChatSidebarSectionProps
                                     className="flex text-gray-600 font-Geist w-full px-3 py-2 items-center gap-2  rounded-md cursor-pointer  hover:bg-blue-100 focus:bg-blue-100"
                                     // onClick={logout}
                                 >
-                                    <Trash2 className="size-5 text-gray-500 " />
+                                    <Trash2 className="size-4 text-gray-500 " />
                                     <span className="text-sm ">Delete</span>
                                 </button>
 

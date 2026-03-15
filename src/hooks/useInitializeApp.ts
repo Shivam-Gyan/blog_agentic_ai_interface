@@ -42,13 +42,13 @@ export function useInitializeApp() {
       setLoading(true);
       try {
         const { data } = await api.get("/user/detail");
-        console.log("Authenticated user:", data.response);
+        // console.log("Authenticated user:", data.response);
         setUser(data.response, token);
 
         const conversationRes = await api.get("/conversations");
 
         const conversations = conversationRes?.data?.conversations ?? []
-        console.log("Fetched conversations:", conversationRes);
+        // console.log("Fetched conversations:", conversationRes);
         setConversation(conversations);
         
       } catch (err) {

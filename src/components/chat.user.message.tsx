@@ -35,12 +35,12 @@ export default function UserMessage({ message, user }: Props) {
   };
 
   return (
-    <div className="flex flex-col items-end gap-1 ">
+    <div className="flex flex-col items-end gap-1 mb-4 ">
 
       {/* Message Row */}
       <div className="flex justify-end items-end gap-2 w-full">
 
-        <div className="px-4 pt-3 pb-2.5 rounded-xl text-sm leading-relaxed  max-w-[75%] bg-blue-500 text-white rounded-br-xs">
+        <div className="px-4 pt-3 pb-1 rounded-xl text-sm leading-relaxed overflow-hidden wrap-break-word  max-w-[75%] bg-blue-500 text-white rounded-br-xs">
 
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkBreaks]}
@@ -78,7 +78,7 @@ export default function UserMessage({ message, user }: Props) {
           onClick={handleCopy}
           className="flex items-center cursor-pointer gap-1 text-xs hover:text-gray-800"
         >
-          <Copy className="size-4" />
+          <Copy className="size-3" />
           {copied ? "Copied" : ""}
         </button>
 
@@ -87,7 +87,7 @@ export default function UserMessage({ message, user }: Props) {
           className="flex items-center cursor-pointer gap-1 text-xs hover:text-gray-800"
         >
           <Star
-            className={`size-4 ${favorite ? "fill-yellow-400 text-yellow-400" : ""
+            className={`size-3 ${favorite ? "fill-yellow-400 text-yellow-400" : ""
               }`}
           />
         </button>
@@ -96,7 +96,7 @@ export default function UserMessage({ message, user }: Props) {
           onClick={handleShare}
           className="flex items-center cursor-pointer gap-1 text-xs hover:text-gray-800"
         >
-          <Pen className="size-4" />
+          <Pen className="size-3" />
         </button>
 
       </div>
