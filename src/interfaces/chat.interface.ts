@@ -43,5 +43,6 @@ export interface ShortSidebarStyleProps {
 
 export interface ChatInterfaceProps {
     onSubmit:({ input }: handleSubmitParameter) => void;
+    onStop: () => void;
     isLoading: boolean;
 }

@@ -14,7 +14,11 @@ import {
   Settings,
   FileText,
   Brain,
-  Volume2Icon
+  Volume2Icon,
+  Undo2,
+  RotateCcw as RetryCCW,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -23,6 +27,7 @@ import rehypeHighlight from "rehype-highlight";
 import type { Message, VerboseStep } from "@/interfaces/conversation.interface";
 import DotsLoader from "@/common/dot.loader";
 import { SpeakerButton } from "./Speaker.component";
+import UseButtonComponent from "@/common/button.common";
 
 interface Props {
   message: Message;
@@ -215,18 +220,252 @@ const MarkdownComponents = ({message}: { message: Message })=>{
               </div>
     )
 }
+// ── Version navigator ──────────────────────────────────────────────────────────
+function VersionNavigator({
+  message,
+  onSwitch,
+  disabled,
+}: {
+  message: Message;
+  onSwitch: (index: number) => void;
+  disabled?: boolean;   // ← disable during active retry
+}) {
+  const versions = message.versions ?? [];
+  const activeIndex = message.active_version_index ?? 0;
 
+  if (versions.length <= 1) return null;
+
+  return (
+    <div className="flex items-center gap-1 text-xs text-gray-500">
+      <button
+        onClick={() => onSwitch(activeIndex - 1)}
+        disabled={disabled || activeIndex === 0}
+        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30
+                   disabled:cursor-not-allowed transition-colors"
+      >
+        <ChevronLeft className="size-3.5" />
+      </button>
+
+      <span className="tabular-nums select-none">
+        {activeIndex + 1} / {versions.length}
+      </span>
+
+      <button
+        onClick={() => onSwitch(activeIndex + 1)}
+        disabled={disabled || activeIndex === versions.length - 1}
+        className="p-1 rounded hover:bg-gray-100 disabled:opacity-30
+                   disabled:cursor-not-allowed transition-colors"
+      >
+        <ChevronRight className="size-3.5" />
+      </button>
+    </div>
+  );
+}
+
+// import {} from "lucide-react";
 
 
 // ── Main component ────────────────────────────────────────────────────────────
+// export default function AIMessage({ message, isLoading }: Props) {
+//   const [copied, setCopied] = useState(false);
+//   const [showReasoning, setShowReasoning] = useState(false);
+//   const [showFinalBlogPost, setShowFinalBlogPost] = useState(false);
+
+//   const verboseSteps = message.verboseSteps ?? [];
+//   // const verboseSteps = message.verboseSteps ?? verboseStepsSample;
+//   const thinkingDone = message.thinkingDone ?? false;
+
+//   const handleCopy = () => {
+//     navigator.clipboard.writeText(message.content);
+//     setCopied(true);
+//     setTimeout(() => setCopied(false), 1200);
+//   };
+
+//   const handleShare = async () => {
+//     if (navigator.share) {
+//       await navigator.share({ text: message.content });
+//     } else {
+//       navigator.clipboard.writeText(message.content);
+//     }
+//   };
+
+//   const handleClick = (content: string, checkpointId: string | null) => {
+//     // Implement your retry logic here, e.g., call an API to regenerate the response based on the checkpointId
+//     console.log("Retrying generation for checkpoint:", checkpointId, content);
+//   }
+
+//   return (
+//     <div className="flex flex-col items-start gap-1 w-full">
+//       <div className="flex justify-start items-start gap-2 w-full">
+
+//         {/* Bot icon with loading ring */}
+//         <div className="relative w-8 h-8 shrink-0 flex items-center justify-center mt-1">
+//           {isLoading && (
+//             <div
+//               className="absolute inset-0 rounded-full animate-spin"
+//               style={{
+//                 background:
+//                   "conic-gradient(from 0deg, #f43f5e, #f97316, #eab308, #22c55e, #3b82f6, #a855f7, #f43f5e)",
+//                 padding: "2px",
+//                 borderRadius: "9999px",
+//               }}
+//             >
+//               <div className="w-full h-full rounded-full bg-white" />
+//             </div>
+//           )}
+//           <div className="relative z-10 w-7 h-7 border border-gray-300 rounded-full flex items-center justify-center bg-white">
+//             <BotMessageSquareIcon className="size-4 text-gray-500" />
+//           </div>
+//         </div>
+
+//         {/* Message column */}
+//         <div className="flex flex-col gap-2 min-w-0 flex-1 max-w-[calc(100%-2.5rem)]">
+
+//           {/* ── Verbose thinking panel ── */}
+//           <ThinkingPanel steps={verboseSteps} done={thinkingDone} />
+
+//           {/* ── Internal reasoning (worker tokens) — collapsible ── */}
+//           {message.reasoning && (
+//             <div className="rounded-md border border-gray-200 bg-gray-50 overflow-hidden max-w-[90%]">
+//               <button
+//                 onClick={() => setShowReasoning(!showReasoning)}
+//                 className="flex items-center gap-2 w-full px-3 py-2 text-xs text-gray-500
+//                            hover:text-gray-700 hover:bg-gray-100 transition-colors"
+//               >
+//                 <span className="flex items-center gap-1.5 text-gray-600 font-medium">
+//                   <Brain className="size-3.5" />
+//                     Mapping logic paths 
+//                 </span>
+//                 {showReasoning
+//                   ? <ChevronUp className="size-3 ml-auto" />
+//                   : <ChevronDown className="size-3 ml-auto" />}
+//               </button>
+//               {showReasoning && (
+//                 <div className="px-3 pb-3 text-xs text-gray-400 font-mono leading-relaxed
+//                                 whitespace-pre-wrap border-t border-gray-200 pt-2
+//                                 max-h-48 overflow-y-auto">
+//                   {message.reasoning}
+//                 </div>
+//               )}
+//             </div>
+//           )}
+//           {message.final_blog_post && (
+//             <div className="rounded-md border border-gray-200 bg-white  max-w-[90%] shadow-sm">
+              
+//               {/* Header toggle */}
+//               <button
+//                 onClick={() => setShowFinalBlogPost(!showFinalBlogPost)}
+//                 className="flex items-center gap-2 w-full px-3 py-2.5 text-xs
+//                           bg-gray-50 hover:bg-gray-100 transition-colors border-b border-gray-200"
+//               >
+//                 <span className="flex items-center gap-1.5 text-gray-600 font-medium">
+//                   <FileText className="size-3.5" />
+//                   Final blog post
+//                 </span>
+
+//                 <div className=""><SpeakerButton text={message.final_blog_post} /></div>
+//                 {showFinalBlogPost
+//                   ? <ChevronUp className="size-3.5 ml-auto text-gray-400" />
+//                   : <ChevronDown className="size-3.5 ml-auto text-gray-400" />}
+//               </button>
+
+//               {/* Blog content — no mono/pre-wrap/muted color overrides */}
+//               {showFinalBlogPost && (
+//                 <div className="px-6 py-4
+//                                 prose prose-sm prose-gray max-w-none">
+//                   <MarkdownComponents
+//                     message={{
+//                       content: message.final_blog_post,
+//                       role: "assistant",
+//                       checkpoint_id: message.checkpoint_id ?? null,
+//                       timestamp: 0,
+//                       id: message.id ,
+//                     }}
+//                   />
+//                 </div>
+//               )}
+//             </div>
+//           )}
+
+
+//           {/* ── Main answer bubble ── */}
+//           {(message.content || isLoading) && (
+//             <div className="px-4 py-3 rounded-xl text-sm leading-relaxed
+//                             bg-gray-100 text-gray-900 rounded-tl-xs
+//                             overflow-hidden max-w-[90%]">
+              
+//               <MarkdownComponents message={message} />
+//               {/* Loading cursor when no content yet */}
+//               {isLoading && !message.content && (<DotsLoader />)}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+
+//       {/* Action bar */}
+//       {!isLoading && message.content && (
+//         <div className="flex items-center  ml-10 mt-1 text-gray-400">
+
+
+//           <UseButtonComponent handlefunc={handleCopy} state={copied} text="copied">
+//             <Copy className="size-3.5" />
+//           </UseButtonComponent>
+
+//           <UseButtonComponent handlefunc={handleShare} state={false} text="">
+//             <ExternalLink className="size-3.5" />
+//           </UseButtonComponent>
+
+//           <SpeakerButton text={message.content} />
+
+//           {/*  retry button */}
+//           <button
+//             onClick={() => handleClick(message.content, message.checkpoint_id ?? null)}
+//             className="p-1.5  rounded-md text-gray-400 hover:text-gray-600 
+//             hover:bg-gray-100 transition-colors"
+
+//           >
+//             <RetryCCW className="size-3.5"/>
+
+//           </button>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }
+
+
+// import { ChevronLeft, ChevronRight, /* ...rest */ } from "lucide-react";
+import { useConversationStore } from "@/stores/conversationStore";
+import { useRetry } from "@/hooks/useRetry";
 export default function AIMessage({ message, isLoading }: Props) {
   const [copied, setCopied] = useState(false);
   const [showReasoning, setShowReasoning] = useState(false);
   const [showFinalBlogPost, setShowFinalBlogPost] = useState(false);
 
+  // Store
+  const currentThreadId = useConversationStore((s) => s.currentThreadId);
+  const switchVersion = useConversationStore((s) => s.switchVersion);
+  const messages = useConversationStore((s) => s.messages);
+
+  // Retry hook
+  const { handleRetry, handleStopRetry, isRetrying } = useRetry();
+
+  // Derive the user query that preceded this assistant message
+  const msgIdx = messages.findIndex((m) => m.id === message.id);
+  const prevUserMsg = msgIdx > 0 ? messages[msgIdx - 1] : null;
+  const userQuery = prevUserMsg?.role === "user" ? prevUserMsg.content : "";
+
   const verboseSteps = message.verboseSteps ?? [];
-  // const verboseSteps = message.verboseSteps ?? verboseStepsSample;
   const thinkingDone = message.thinkingDone ?? false;
+
+  // Composite loading state — spinner ring shows for both generation and retry
+  const showLoadingRing = isLoading || isRetrying;
+
+  const handleSwitchVersion = (targetIndex: number) => {
+    if (!currentThreadId) return;
+    switchVersion(currentThreadId, message.id, targetIndex);
+  };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content);
@@ -242,18 +481,28 @@ export default function AIMessage({ message, isLoading }: Props) {
     }
   };
 
+  const handleRetryClick = () => {
+    console.log("Retry clicked for message:", message.id, "with retry_id:", message.retry_id);
+    console.log("User query for retry:", message.retry_id);
+    if (!message.retry_id || isRetrying) return;
+    handleRetry({
+      messageId: message.id,
+      retryId: message.retry_id,
+      userQuery,
+    });
+  };
+
   return (
     <div className="flex flex-col items-start gap-1 w-full">
       <div className="flex justify-start items-start gap-2 w-full">
 
-        {/* Bot icon with loading ring */}
+        {/* ── Bot icon ── */}
         <div className="relative w-8 h-8 shrink-0 flex items-center justify-center mt-1">
-          {isLoading && (
+          {showLoadingRing && (
             <div
               className="absolute inset-0 rounded-full animate-spin"
               style={{
-                background:
-                  "conic-gradient(from 0deg, #f43f5e, #f97316, #eab308, #22c55e, #3b82f6, #a855f7, #f43f5e)",
+                background: "conic-gradient(from 0deg, #f43f5e, #f97316, #eab308, #22c55e, #3b82f6, #a855f7, #f43f5e)",
                 padding: "2px",
                 borderRadius: "9999px",
               }}
@@ -266,13 +515,13 @@ export default function AIMessage({ message, isLoading }: Props) {
           </div>
         </div>
 
-        {/* Message column */}
+        {/* ── Message column ── */}
         <div className="flex flex-col gap-2 min-w-0 flex-1 max-w-[calc(100%-2.5rem)]">
 
-          {/* ── Verbose thinking panel ── */}
+          {/* Verbose thinking panel */}
           <ThinkingPanel steps={verboseSteps} done={thinkingDone} />
 
-          {/* ── Internal reasoning (worker tokens) — collapsible ── */}
+          {/* Internal reasoning */}
           {message.reasoning && (
             <div className="rounded-md border border-gray-200 bg-gray-50 overflow-hidden max-w-[90%]">
               <button
@@ -282,7 +531,7 @@ export default function AIMessage({ message, isLoading }: Props) {
               >
                 <span className="flex items-center gap-1.5 text-gray-600 font-medium">
                   <Brain className="size-3.5" />
-                    Mapping logic paths 
+                  Mapping logic paths
                 </span>
                 {showReasoning
                   ? <ChevronUp className="size-3 ml-auto" />
@@ -290,97 +539,93 @@ export default function AIMessage({ message, isLoading }: Props) {
               </button>
               {showReasoning && (
                 <div className="px-3 pb-3 text-xs text-gray-400 font-mono leading-relaxed
-                                whitespace-pre-wrap border-t border-gray-200 pt-2
-                                max-h-48 overflow-y-auto">
+                                whitespace-pre-wrap border-t border-gray-200 pt-2 max-h-48 overflow-y-auto">
                   {message.reasoning}
                 </div>
               )}
             </div>
           )}
+
+          {/* Final blog post */}
           {message.final_blog_post && (
-            <div className="rounded-md border border-gray-200 bg-white  max-w-[90%] shadow-sm">
-              
-              {/* Header toggle */}
+            <div className="rounded-md border border-gray-200 bg-white max-w-[90%] shadow-sm">
               <button
                 onClick={() => setShowFinalBlogPost(!showFinalBlogPost)}
                 className="flex items-center gap-2 w-full px-3 py-2.5 text-xs
-                          bg-gray-50 hover:bg-gray-100 transition-colors border-b border-gray-200"
+                           bg-gray-50 hover:bg-gray-100 transition-colors border-b border-gray-200"
               >
                 <span className="flex items-center gap-1.5 text-gray-600 font-medium">
                   <FileText className="size-3.5" />
                   Final blog post
                 </span>
-
-                <div className=""><SpeakerButton text={message.final_blog_post} /></div>
+                <div><SpeakerButton text={message.final_blog_post} /></div>
                 {showFinalBlogPost
                   ? <ChevronUp className="size-3.5 ml-auto text-gray-400" />
                   : <ChevronDown className="size-3.5 ml-auto text-gray-400" />}
               </button>
-
-              {/* Blog content — no mono/pre-wrap/muted color overrides */}
               {showFinalBlogPost && (
-                <div className="px-6 py-4
-                                prose prose-sm prose-gray max-w-none">
+                <div className="px-6 py-4 prose prose-sm prose-gray max-w-none">
                   <MarkdownComponents
-                    message={{
-                      content: message.final_blog_post,
-                      role: "assistant",
-                      id: "",
-                      timestamp: 0,
-                    }}
+                    message={{ content: message.final_blog_post, role: "assistant", timestamp: 0, id: message.id }}
                   />
                 </div>
               )}
             </div>
           )}
 
-
-          {/* ── Main answer bubble ── */}
-          {(message.content || isLoading) && (
+          {/* Main answer bubble */}
+          {(message.content || showLoadingRing) && (
             <div className="px-4 py-3 rounded-xl text-sm leading-relaxed
                             bg-gray-100 text-gray-900 rounded-tl-xs
                             overflow-hidden max-w-[90%]">
-              
-              <MarkdownComponents message={message} />
-              {/* Loading cursor when no content yet */}
-              {isLoading && !message.content && (<DotsLoader />)}
+              {message.content && <MarkdownComponents message={message} />}
+              {showLoadingRing && !message.content && <DotsLoader />}
             </div>
           )}
         </div>
       </div>
 
+      {/* ── Action bar — hidden while loading or retrying ── */}
+      {!isLoading && !isRetrying && message.content && (
+        <div className="flex items-center gap-0.5 ml-10 mt-1 text-gray-400">
 
-      {/* Action bar */}
-      {!isLoading && message.content && (
-        <div className="flex items-center gap-3 ml-10 mt-1 text-gray-400">
-          <button
-            onClick={handleCopy}
-            className="flex items-center gap-1 text-xs hover:text-gray-700 transition-colors"
-          >
+          <UseButtonComponent handlefunc={handleCopy} state={copied} text="copied">
             <Copy className="size-3.5" />
-            {copied && <span className="text-green-600">Copied</span>}
-          </button>
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1 text-xs hover:text-gray-700 transition-colors"
-          >
+          </UseButtonComponent>
+
+          <UseButtonComponent handlefunc={handleShare} state={false} text="">
             <ExternalLink className="size-3.5" />
-          </button>
-          {/* <button
-            onClick={handleCopy}
-            className="flex items-center gap-1 text-xs hover:text-gray-700 transition-colors"
-          >
-            <Volume2Icon className="size-3.5" />
-            {copied && <span className="text-green-600">Copied</span>}
-          </button> */}
+          </UseButtonComponent>
+
           <SpeakerButton text={message.content} />
+
+          {/* Version navigator — disabled during retry */}
+          <VersionNavigator
+            message={message}
+            onSwitch={handleSwitchVersion}
+            disabled={isRetrying}
+          />
+
+          {/* Retry button — only if retry_id exists */}
+          {message.retry_id && (
+            <button
+              onClick={isRetrying ? handleStopRetry : handleRetryClick}
+              className="p-1.5 rounded-md text-gray-400 hover:text-gray-600
+                         hover:bg-gray-100 transition-colors"
+              title={isRetrying ? "Stop retry" : "Regenerate response"}
+            >
+              {isRetrying
+                ? <Loader2 className="size-3.5 animate-spin" />
+                : <RetryCCW className="size-3.5" />
+              }
+            </button>
+          )}
+
         </div>
       )}
     </div>
   );
 }
-
-
 
 // 'use client'
 

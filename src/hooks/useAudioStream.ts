@@ -42,12 +42,16 @@ export function useTTS() {
 
       // Decode and play via Web Audio API
       const audioCtx = new AudioContext();
+      console.log("AudioContext created:", audioCtx);
       audioCtxRef.current = audioCtx;
 
       const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+      console.log("AudioBuffer decoded:", audioBuffer);
       const source = audioCtx.createBufferSource();
+      console.log("AudioBufferSource created:", source);
       source.buffer = audioBuffer;
       source.connect(audioCtx.destination);
+      console.log("AudioBufferSource connected to destination:", source);
 
       source.onended = () => {
         setIsPlaying(false);

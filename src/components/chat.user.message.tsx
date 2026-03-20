@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
 import rehypeHighlight from "rehype-highlight";
 import { Copy, ExternalLink, Pen, Star } from "lucide-react";
+import UseButtonComponent from "@/common/button.common";
 
 interface Props {
   message: any;
@@ -72,31 +73,25 @@ export default function UserMessage({ message, user }: Props) {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex  items-center gap-3 mr-10 mt-1 text-gray-500">
+      <div className="flex  items-center  mr-10 mt-1 text-gray-500">
 
-        <button
-          onClick={handleCopy}
-          className="flex items-center cursor-pointer gap-1 text-xs hover:text-gray-800"
-        >
-          <Copy className="size-3" />
-          {copied ? "Copied" : ""}
-        </button>
+        <UseButtonComponent handlefunc={handleCopy} state={copied} text="copied">
+          <Copy className="size-3.5" />
+        </UseButtonComponent>
 
-        <button
-          onClick={() => setFavorite(!favorite)}
-          className="flex items-center cursor-pointer gap-1 text-xs hover:text-gray-800"
-        >
+        <UseButtonComponent handlefunc={() => setFavorite(!favorite)} >
           <Star
-            className={`size-3 ${favorite ? "fill-yellow-400 text-yellow-400" : ""
+            className={`size-3.5 ${favorite ? "fill-yellow-400 text-yellow-400" : ""
               }`}
           />
-        </button>
+        </UseButtonComponent>
 
         <button
           onClick={handleShare}
-          className="flex items-center cursor-pointer gap-1 text-xs hover:text-gray-800"
+          className="p-1.5  rounded-md text-gray-400 hover:text-gray-600 
+      hover:bg-gray-100 transition-colors"
         >
-          <Pen className="size-3" />
+          <Pen className="size-3.5" />
         </button>
 
       </div>

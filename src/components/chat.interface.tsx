@@ -24,22 +24,22 @@ const resources = [
 ];
 
 
-export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProps) {
+export default function ChatInterface({ onSubmit, isLoading, onStop }: ChatInterfaceProps) {
 
     const [input, setInput] = useState<string>("");
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const [isSpeechActive, setIsSpeechActive] = useState(false);
     const { transcript, isListening, error } = useSpeechRecognition(isSpeechActive);
 
-    
+
     const [isMcpEnabled, setIsMcpEnabled] = useState(false);
     const [activeTab, setActiveTab] = useState<"tools" | "resources">("tools");
-    const mode    = useAgentStore((s) => s.mode);
+    const mode = useAgentStore((s) => s.mode);
     const setMode = useAgentStore((s) => s.setMode);
-    
+
     const submitMessage = () => {
         if (!input.trim()) return;
-        onSubmit({input});
+        onSubmit({ input });
         setInput("");
     };
 
@@ -247,18 +247,30 @@ export default function ChatInterface({ onSubmit, isLoading }: ChatInterfaceProp
                             }
                         </Button>
 
-                        <Button
-                            type="submit"
-                            variant="ghost"
-                            size="icon"
-                            disabled={isLoading || !input.trim()}
-                            className={cn(
-                                "bg-blue-600 text-white h-9 w-9 p-2 rounded-full hover:border-2 border-gray-400 cursor-pointer",
-                                !input.trim() && "opacity-50 cursor-not-allowed"
-                            )}
-                        >
-                            <ArrowUp className="size-5" />
-                        </Button>
+                        {isLoading ? (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={onStop}
+                                className="bg-red-500 hover:bg-red-600 text-white h-9 w-9 p-2 rounded-full cursor-pointer"
+                            >
+                                <Square className="size-5" />
+                            </Button>
+                        ) : (
+                            <Button
+                                type="submit"
+                                variant="ghost"
+                                size="icon"
+                                disabled={isLoading || !input.trim()}
+                                className={cn(
+                                    "bg-blue-600 text-white h-9 w-9 p-2 rounded-full hover:border-2 border-gray-400 cursor-pointer",
+                                    !input.trim() && "opacity-50 cursor-not-allowed"
+                                )}
+                            >
+                                <ArrowUp className="size-5" />
+                            </Button>
+                        )}
                     </div>
                 </div>
             </form>
