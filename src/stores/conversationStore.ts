@@ -509,6 +509,7 @@ interface ConversationStore {
   setThinkingDone: (threadId: string) => void;
   setFinalBlogPost: (threadId: string, content: string) => void;
   appendAssistantReasoning: (threadId: string, chunk: string) => void;
+  prepareEditRetry: (threadId: string, messageId: string, editedContent: string) => void;
   finalizeAssistantMessage: (
     threadId: string,
     content: string,
@@ -718,6 +719,40 @@ export const useConversationStore = create<ConversationStore>((set) => ({
         };
       }
       return { messages };
+    }),
+
+  prepareEditRetry: (threadId, messageId, editedContent) =>
+    set((state) => {
+      if (threadId !== state.currentThreadId) return state;
+
+      const messageIndex = state.messages.findIndex((message) => message.id === messageId);
+      if (messageIndex === -1) return state;
+
+      const targetMessage = state.messages[messageIndex];
+      if (targetMessage.role !== "user") return state;
+
+      const userPromptIndex = state.messages.slice(0, messageIndex).filter((message) => message.role === "user").length;
+      const nextMessages = state.messages.slice(0, messageIndex + 1).map((message, index) =>
+        index === messageIndex ? { ...message, content: editedContent } : message
+      );
+
+      nextMessages.push({
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: "",
+        timestamp: Date.now(),
+        reasoning: "",
+        verboseSteps: [],
+        thinkingDone: false,
+      });
+
+      const nextUserPrompts = state.userPrompts.slice(0, userPromptIndex);
+      nextUserPrompts.push(editedContent);
+
+      return {
+        messages: nextMessages,
+        userPrompts: nextUserPrompts,
+      };
     }),
 
   // Called on successful stream result

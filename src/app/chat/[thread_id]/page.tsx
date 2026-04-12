@@ -471,6 +471,8 @@ export default function Chat() {
     container.scrollTop = container.scrollHeight;
   }, [messages]);
 
+  console.log("Rendering Chat with messages:", messages);
+
   // ── Scroll: snap to bottom when stream ends ───────────────────────────────
   useEffect(() => {
     if (!isLoading) {
